@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@inherits ComponentBase
+@page "/counter"
+
+<PageTitle>Graficador</PageTitle>
+
+
+
+
+<div style="display: flex;">
+    <div class="leftHalf">
+        @* Este es el input del codigo *@ 
+        <textarea @bind="CodigoEscrito" @oninput="ActualizarTexto" class= "codeInput"></textarea>
+            @* <input type="text" @bind="CodigoEscrito" @oninput="ActualizarTexto" /> *@ 
+        <input type="text" value="@Errores" class="logErrors" readonly />
+
+@code {
+}
+            
+    </div>
+    <div class="rightHalf">
+        
+        @* Este es el canvas para graficar *@
+        <canvas id="coordenadasCanvas" width="600" height="600"></canvas>
+    </div>
+</div>
+
+
+
+
+@code {
+
+    private int currentCount = 0;
+    private string CodigoEscrito = "Introduzca su código";
+    
+    private string Errores = "Log de Errores";
+    // Puedes tener un método que cambie el texto
+    private void MostrarErrores(string text)
+    {
+        Errores = text;
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        DibujarPunto(currentCount * 20, 100);
+    }
+    private void DibujarPunto(int x, int y)
+    {
+        string script = $"drawPoint({x}, {y})";
+        JSRuntime.InvokeVoidAsync("eval", script);
+    }
+
+    private void ActualizarTexto(ChangeEventArgs e)
+    {
+        CodigoEscrito = e.Value as string;
+        // Realizar acciones adicionales cuando el texto cambia
+    }
+}
