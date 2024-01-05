@@ -1,61 +1,62 @@
-﻿@using Microsoft.AspNetCore.Components
-@using Microsoft.JSInterop
-@inject IJSRuntime JSRuntime
-@inherits ComponentBase
+﻿@inject IJSRuntime JSRuntime
 @page "/counter"
 
-<PageTitle>Graficador</PageTitle>
-
-
-
-
-<div style="display: flex;">
-    <div class="leftHalf">
-        @* Este es el input del codigo *@ 
-        <textarea @bind="CodigoEscrito" @oninput="ActualizarTexto" class= "codeInput"></textarea>
-            @* <input type="text" @bind="CodigoEscrito" @oninput="ActualizarTexto" /> *@ 
-        <input type="text" value="@Errores" class="logErrors" readonly />
-
-@code {
-}
-            
-    </div>
-    <div class="rightHalf">
-        
-        @* Este es el canvas para graficar *@
-        <canvas id="coordenadasCanvas" width="600" height="600"></canvas>
+<div class="counter">
+     <canvas id="myCanvas" class="bg-gray"></canvas>   
+    
+    <div class="compilator">
+        <h4 class="title-compilator">Escriba su codigo | Error</h4>
+        <textarea type="text" class="textarea-compilator bg-gray" />
+        <div class="error-compilator bg-gray"></div>
+        <div>
+            <button class="btn-compilator-compilar btn-compilator bg-gray" @onclick="DibujarArco"><strong>Compilar</strong></button>
+            <button class="btn-compilator-compilar btn-compilator bg-gray"><strong>Restaurar</strong></button>
+            <button class="btn-compilator-compilar btn-compilator bg-gray"><strong>Importar</strong></button>
+        </div>
     </div>
 </div>
 
 
-
-
-@code {
-
-    private int currentCount = 0;
-    private string CodigoEscrito = "Introduzca su código";
-    
-    private string Errores = "Log de Errores";
-    // Puedes tener un método que cambie el texto
-    private void MostrarErrores(string text)
+@code
+{ 
+    @*Nuevos Metodos Agregados*@
+protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Errores = text;
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("setupPaperJs","myCanvas");
+        }
+    }
+    private async Task CrearPunto()
+    {
+        Random Prueba = new Random();
+        await JSRuntime.InvokeVoidAsync("crearPuntoEnCanvas",Prueba.Next(200),Prueba.Next(200));
+    }
+    private async Task CrearPuntoConID()
+    {
+        Random Prueba = new Random();
+        await JSRuntime.InvokeVoidAsync("crearPuntoConIdentificadorEnCanvas",Prueba.Next(200),Prueba.Next(200),"punto1");
+    }
+    private async Task DibujarSegmento()
+    {
+        await JSRuntime.InvokeVoidAsync("dibujarSegmento", 50, 50, 200, 200, "blue", 2);
+        // Parámetros: canvasId, puntoInicialX, puntoInicialY, puntoFinalX, puntoFinalY, color, grosor
+    }
+    private async Task DibujarArco()
+    {
+        System.Console.WriteLine("Me llamaron a dibujar");
+        await JSRuntime.InvokeVoidAsync("drawArcBetweenPointsPaperJS", "myCanvas", 100, 50, 200, 250, 300, 150, "blue", 3);
+        // Parámetros: canvasId, puntoCentroX, puntoCentroY, puntoArco1X, puntoArco1Y, puntoArco2X, puntoArco2Y, color, grosor
     }
 
-    private void IncrementCount()
+    private async Task DibujarLinea()
     {
-        currentCount++;
-        DibujarPunto(currentCount * 20, 100);
+        await JSRuntime.InvokeVoidAsync("dibujarLineaConDosPuntos", "myCanvas",50, 0,20,  0,  "blue", 3);
     }
-    private void DibujarPunto(int x, int y)
+    private async Task DibujarCircunferencia()
     {
-        string script = $"drawPoint({x}, {y})";
-        JSRuntime.InvokeVoidAsync("eval", script);
+        await JSRuntime.InvokeVoidAsync("dibujarCircunferencia", "myCanvas", 100, -30, 40);
+        // Parámetros: canvasId, centroX, centroY, radio
     }
 
-    private void ActualizarTexto(ChangeEventArgs e)
-    {
-        CodigoEscrito = e.Value as string;
-        // Realizar acciones adicionales cuando el texto cambia
-    }
 }
